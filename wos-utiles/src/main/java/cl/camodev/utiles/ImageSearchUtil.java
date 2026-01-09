@@ -123,6 +123,23 @@ public class ImageSearchUtil {
 			}
 		});
 	}
+	
+	/**
+	 * Helper class for handling optional parameters with default values for image search
+	 */
+	public static class Options {
+		public boolean greyscale;
+
+		public Options setGreyscale(boolean greyscale) {
+			this.greyscale = greyscale;
+			return this;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("Greyscale = %s", greyscale);
+		}
+	}
 
 	/**
 	 * Performs the search for a template within a main image.
@@ -154,6 +171,16 @@ public class ImageSearchUtil {
 	 */
 	public static List<DTOImageSearchResult> searchTemplateGrayscaleMultiple(byte[] image, String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage, int maxResults) {
 		return searchTemplateGrayscaleMultipleOptimized(image, templateResourcePath, topLeftCorner, bottomRightCorner, thresholdPercentage, maxResults);
+	}
+	
+	
+	private static Mat loadTemplate(String templateResourcePath,boolean greyscale) {
+		if (greyscale) {
+			return loadTemplateGrayscale(templateResourcePath);
+		}
+		else {
+			return loadTemplateOptimized(templateResourcePath);
+		}				
 	}
 
 	/**
@@ -243,11 +270,21 @@ public class ImageSearchUtil {
 	 */
 	public static DTOImageSearchResult searchTemplateOptimized(byte[] image, String templateResourcePath,
 			DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage) {
+		return searchTemplate(image,templateResourcePath,topLeftCorner,bottomRightCorner,thresholdPercentage,null);
+	}
+
+	/**
+	 * Performs the search for a template within a main image.
+	 */
+	public static DTOImageSearchResult searchTemplate(byte[] image, String templateResourcePath,
+			DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage, Options options) {
 
 		Mat imagenPrincipal = null;
 		Mat template = null;
 		Mat imagenROI = null;
 		Mat resultado = null;
+		
+		if (options == null) options = new Options();
 
 		try {
 			// Quick ROI validation
@@ -268,9 +305,20 @@ public class ImageSearchUtil {
 			if (imagenPrincipal.empty()) {
 				return new DTOImageSearchResult(false, null, 0.0);
 			}
+			
+			if (options.greyscale) {
+	            // Convert main image to grayscale
+				Mat oldImage = imagenPrincipal;
+				try {
+					imagenPrincipal = new Mat();
+					Imgproc.cvtColor(oldImage, imagenPrincipal, Imgproc.COLOR_BGR2GRAY);
+				} finally {
+					oldImage.release();
+				}
+			}
 
 			// Load optimized template with cache
-			template = loadTemplateOptimized(templateResourcePath);
+			template = loadTemplate(templateResourcePath,options.greyscale);
 			if (template.empty()) {
 				return new DTOImageSearchResult(false, null, 0.0);
 			}
@@ -301,11 +349,11 @@ public class ImageSearchUtil {
 			double matchPercentage = mmr.maxVal * 100.0;
 
 			if (matchPercentage < thresholdPercentage) {
-				logger.warn(formatLogMessage("Template " + templateResourcePath + " match percentage " + matchPercentage + " below threshold " + thresholdPercentage));
+				logger.warn(formatLogMessage("Template " + templateResourcePath + " match percentage " + matchPercentage + " below threshold " + thresholdPercentage + "with options " + options.toString()));
 				return new DTOImageSearchResult(false, null, matchPercentage);
 			}
 
-			logger.info(formatLogMessage("Template " + templateResourcePath + " found with match percentage: " + matchPercentage));
+			logger.info(formatLogMessage("Template " + templateResourcePath + " found with match percentage: " + matchPercentage + "and options "+ options.toString()));
 
 			// Calculate center coordinates
 			Point matchLoc = mmr.maxLoc;
@@ -315,7 +363,7 @@ public class ImageSearchUtil {
 			return new DTOImageSearchResult(true, new DTOPoint((int) centerX, (int) centerY), matchPercentage);
 
 		} catch (Exception e) {
-			logger.error(formatLogMessage("Exception during optimized template search"), e);
+			logger.error(formatLogMessage("Exception during optimized template search with options " + options.toString()), e);
 			return new DTOImageSearchResult(false, null, 0.0);
 		} finally {
 			// Explicit release of OpenCV memory
@@ -325,7 +373,8 @@ public class ImageSearchUtil {
 			if (resultado != null) resultado.release();
 		}
 	}
-
+	
+	
 	/**
 	 * Optimized version for multiple search with parallelization.
 	 */
@@ -343,6 +392,15 @@ public class ImageSearchUtil {
 	public static List<DTOImageSearchResult> searchTemplateMultipleOptimized(byte[] image,
 			String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner,
 			double thresholdPercentage, int maxResults) {
+		return searchTemplateMultiple(image,templateResourcePath,topLeftCorner,bottomRightCorner,thresholdPercentage,maxResults,null);
+	}
+	
+	/**
+	 * multiple search.
+	 */
+	public static List<DTOImageSearchResult> searchTemplateMultiple(byte[] image,
+			String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner,
+			double thresholdPercentage, int maxResults, Options options) {
 
 		List<DTOImageSearchResult> results = new ArrayList<>();
 		Mat mainImage = null;
@@ -350,6 +408,8 @@ public class ImageSearchUtil {
 		Mat imageROI = null;
 		Mat matchResult = null;
 		Mat resultCopy = null;
+		
+		if (options == null) options = new Options();
 
 		try {
 			// Quick ROI validation
@@ -369,9 +429,20 @@ public class ImageSearchUtil {
 			if (mainImage.empty()) {
 				return results;
 			}
+			
+			if (options.greyscale) {
+	            // Convert main image to grayscale
+				Mat oldImage = mainImage;
+				try {
+					mainImage = new Mat();
+					Imgproc.cvtColor(oldImage, mainImage, Imgproc.COLOR_BGR2GRAY);
+				} finally {
+					oldImage.release();
+				}
+			}
 
 			// Load template with cache
-			template = loadTemplateOptimized(templateResourcePath);
+			template = loadTemplate(templateResourcePath,options.greyscale);
 			if (template.empty()) {
 				return results;
 			}
@@ -454,92 +525,7 @@ public class ImageSearchUtil {
 	 */
 	public static DTOImageSearchResult searchTemplateGrayscaleOptimized(byte[] image, String templateResourcePath,
 			DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage) {
-
-		Mat imagenPrincipal = null;
-		Mat imagenPrincipalGray = null;
-		Mat template = null;
-		Mat imagenROI = null;
-		Mat resultado = null;
-
-		try {
-			// Quick ROI validation
-			int roiX = topLeftCorner.getX();
-			int roiY = topLeftCorner.getY();
-			int roiWidth = bottomRightCorner.getX() - topLeftCorner.getX();
-			int roiHeight = bottomRightCorner.getY() - topLeftCorner.getY();
-
-			if (roiWidth <= 0 || roiHeight <= 0) {
-				logger.error(formatLogMessage("Invalid ROI dimensions"));
-				return new DTOImageSearchResult(false, null, 0.0);
-			}
-
-			// Decoding of main image (reusable)
-			MatOfByte matOfByte = new MatOfByte(image);
-			imagenPrincipal = Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_COLOR);
-
-			if (imagenPrincipal.empty()) {
-				return new DTOImageSearchResult(false, null, 0.0);
-			}
-			
-			// Convert main image to grayscale
-			imagenPrincipalGray = new Mat();
-			Imgproc.cvtColor(imagenPrincipal, imagenPrincipalGray, Imgproc.COLOR_BGR2GRAY);
-			imagenPrincipal.release();
-			imagenPrincipal = null;
-
-			// Load optimized grayscale template with cache
-			template = loadTemplateGrayscale(templateResourcePath);
-			if (template.empty()) {
-				return new DTOImageSearchResult(false, null, 0.0);
-			}
-
-			// ROI vs image validation
-			if (roiX + roiWidth > imagenPrincipalGray.cols() || roiY + roiHeight > imagenPrincipalGray.rows()) {
-				logger.error(formatLogMessage("ROI exceeds image dimensions"));
-				return new DTOImageSearchResult(false, null, 0.0);
-			}
-
-			// Create ROI
-			Rect roi = new Rect(roiX, roiY, roiWidth, roiHeight);
-			imagenROI = new Mat(imagenPrincipalGray, roi);
-
-			// Optimized size check
-			int resultCols = imagenROI.cols() - template.cols() + 1;
-			int resultRows = imagenROI.rows() - template.rows() + 1;
-			if (resultCols <= 0 || resultRows <= 0) {
-				return new DTOImageSearchResult(false, null, 0.0);
-			}
-
-			// Template matching
-			resultado = new Mat(resultRows, resultCols, CvType.CV_32FC1);
-			Imgproc.matchTemplate(imagenROI, template, resultado, Imgproc.TM_CCOEFF_NORMED);
-
-			// Search for the best match
-			Core.MinMaxLocResult mmr = Core.minMaxLoc(resultado);
-			double matchPercentage = mmr.maxVal * 100.0;
-
-			if (matchPercentage < thresholdPercentage) {
-				logger.warn(formatLogMessage("Grayscale template " + templateResourcePath + " match percentage " + matchPercentage + " below threshold " + thresholdPercentage));
-				return new DTOImageSearchResult(false, null, matchPercentage);
-			}
-
-			// Calculate center point of the match (taking ROI into account)
-			int centerX = (int) (mmr.maxLoc.x + (double) template.cols() / 2 + roiX);
-			int centerY = (int) (mmr.maxLoc.y + (double) template.rows() / 2 + roiY);
-
-			return new DTOImageSearchResult(true, new DTOPoint(centerX, centerY), matchPercentage);
-
-		} catch (Exception e) {
-			logger.error(formatLogMessage("Exception during grayscale template search"), e);
-			return new DTOImageSearchResult(false, null, 0.0);
-		} finally {
-			// Explicit memory release for all Mat objects
-			if (imagenPrincipal != null) imagenPrincipal.release();
-			if (imagenPrincipalGray != null) imagenPrincipalGray.release();
-			if (template != null) template.release();
-			if (imagenROI != null) imagenROI.release();
-			if (resultado != null) resultado.release();
-		}
+		return searchTemplate(image,templateResourcePath,topLeftCorner,bottomRightCorner,thresholdPercentage,new Options().setGreyscale(true));
 	}
 	
 	/**
@@ -549,117 +535,7 @@ public class ImageSearchUtil {
 	public static List<DTOImageSearchResult> searchTemplateGrayscaleMultipleOptimized(byte[] image,
 			String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner,
 			double thresholdPercentage, int maxResults) {
-
-		List<DTOImageSearchResult> results = new ArrayList<>();
-		Mat mainImage = null;
-		Mat mainImageGray = null;
-		Mat template = null;
-		Mat imageROI = null;
-		Mat matchResult = null;
-		Mat resultCopy = null;
-
-		try {
-			// Quick ROI validation
-			int roiX = topLeftCorner.getX();
-			int roiY = topLeftCorner.getY();
-			int roiWidth = bottomRightCorner.getX() - topLeftCorner.getX();
-			int roiHeight = bottomRightCorner.getY() - topLeftCorner.getY();
-
-			if (roiWidth <= 0 || roiHeight <= 0) {
-				return results;
-			}
-
-			// Optimized decoding
-			MatOfByte matOfByte = new MatOfByte(image);
-			mainImage = Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_COLOR);
-
-			if (mainImage.empty()) {
-				return results;
-			}
-			
-			// Convert to grayscale
-			mainImageGray = new Mat();
-			Imgproc.cvtColor(mainImage, mainImageGray, Imgproc.COLOR_BGR2GRAY);
-			mainImage.release();
-			mainImage = null;
-
-			// Load grayscale template with cache
-			template = loadTemplateGrayscale(templateResourcePath);
-			if (template.empty()) {
-				return results;
-			}
-
-			// Validations
-			if (roiX + roiWidth > mainImageGray.cols() || roiY + roiHeight > mainImageGray.rows()) {
-				return results;
-			}
-
-			// Create ROI
-			Rect roi = new Rect(roiX, roiY, roiWidth, roiHeight);
-			imageROI = new Mat(mainImageGray, roi);
-
-			int resultCols = imageROI.cols() - template.cols() + 1;
-			int resultRows = imageROI.rows() - template.rows() + 1;
-			if (resultCols <= 0 || resultRows <= 0) {
-				return results;
-			}
-
-			// Template matching
-			matchResult = new Mat(resultRows, resultCols, CvType.CV_32FC1);
-			Imgproc.matchTemplate(imageROI, template, matchResult, Imgproc.TM_CCOEFF_NORMED);
-
-			// Optimized search for multiple matches
-			double thresholdDecimal = thresholdPercentage / 100.0;
-			resultCopy = matchResult.clone();
-			int templateWidth = template.cols();
-			int templateHeight = template.rows();
-
-			// Pre-calculate for optimization
-			int halfTemplateWidth = templateWidth / 2;
-			int halfTemplateHeight = templateHeight / 2;
-
-			while (results.size() < maxResults || maxResults <= 0) {
-				Core.MinMaxLocResult mmr = Core.minMaxLoc(resultCopy);
-				double matchValue = mmr.maxVal;
-
-				if (matchValue < thresholdDecimal) {
-					break;
-				}
-
-				Point matchLoc = mmr.maxLoc;
-				double centerX = matchLoc.x + roi.x + halfTemplateWidth;
-				double centerY = matchLoc.y + roi.y + halfTemplateHeight;
-
-				results.add(new DTOImageSearchResult(true,
-					new DTOPoint((int) centerX, (int) centerY), matchValue * 100.0));
-
-				// Optimized suppression
-				int suppressX = Math.max(0, (int)matchLoc.x - halfTemplateWidth);
-				int suppressY = Math.max(0, (int)matchLoc.y - halfTemplateHeight);
-				int suppressWidth = Math.min(templateWidth, resultCopy.cols() - suppressX);
-				int suppressHeight = Math.min(templateHeight, resultCopy.rows() - suppressY);
-
-				if (suppressWidth > 0 && suppressHeight > 0) {
-					Rect suppressRect = new Rect(suppressX, suppressY, suppressWidth, suppressHeight);
-					Mat suppressArea = new Mat(resultCopy, suppressRect);
-					suppressArea.setTo(new org.opencv.core.Scalar(0));
-					suppressArea.release();
-				}
-			}
-
-		} catch (Exception e) {
-			logger.error(formatLogMessage("Exception during optimized multiple grayscale template search"), e);
-		} finally {
-			// Explicit memory release
-			if (mainImage != null) mainImage.release();
-			if (mainImageGray != null) mainImageGray.release();
-			if (template != null) template.release();
-			if (imageROI != null) imageROI.release();
-			if (matchResult != null) matchResult.release();
-			if (resultCopy != null) resultCopy.release();
-		}
-
-		return results;
+		return searchTemplateMultiple(image,templateResourcePath,topLeftCorner,bottomRightCorner,thresholdPercentage,maxResults,new Options().setGreyscale(true));
 	}
 
 	/**
