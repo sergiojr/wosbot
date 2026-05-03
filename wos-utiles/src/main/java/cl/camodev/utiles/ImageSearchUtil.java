@@ -124,15 +124,47 @@ public class ImageSearchUtil {
 			}
 		});
 	}
+	
+	/**
+	 * Helper class for handling optional parameters with default values for image search
+	 */
+	public static class Options {
+		public boolean greyscale;
+
+		public Options setGreyscale(boolean greyscale) {
+			this.greyscale = greyscale;
+			return this;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("Greyscale = %s", greyscale);
+		}
+	}
 
 	/**
 	 * Performs the search for a template within a raw image.
 	 * Always receives raw image data and converts directly to OpenCV Mat.
 	 */
-	public static DTOImageSearchResult searchTemplate(DTORawImage rawImage, String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage) {
-		DTOImageSearchResult result = searchTemplateOptimized(rawImage.getData(), rawImage.getWidth(), rawImage.getHeight(),
-				rawImage.getBpp(), templateResourcePath, topLeftCorner, bottomRightCorner, thresholdPercentage);
+	public static DTOImageSearchResult searchTemplate(DTORawImage rawImage, String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage,
+													  Options options) {
+		DTOImageSearchResult result = searchTemplate(rawImage.getData(), rawImage.getWidth(), rawImage.getHeight(),
+				rawImage.getBpp(), templateResourcePath, topLeftCorner, bottomRightCorner, thresholdPercentage, options);
 		return result;
+	}
+	
+	public static List<DTOImageSearchResult> searchTemplateMultiple(DTORawImage rawImage, String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage, int maxResults,
+																	Options options) {
+		List<DTOImageSearchResult> results;
+		if (options.greyscale) {
+			results = searchTemplateGrayscaleMultipleOptimizedRaw(rawImage.getData(), rawImage.getWidth(), rawImage.getHeight(),
+					rawImage.getBpp(), templateResourcePath, topLeftCorner, bottomRightCorner, thresholdPercentage, maxResults);
+		}else {
+			results = searchTemplateMultipleOptimizedRaw(rawImage.getData(), rawImage.getWidth(), rawImage.getHeight(),
+					rawImage.getBpp(), templateResourcePath, topLeftCorner, bottomRightCorner, thresholdPercentage, maxResults);		
+		}
+			
+		return results;
 	}
 
 	/**
@@ -198,6 +230,16 @@ public class ImageSearchUtil {
 	public static List<DTOImageSearchResult> searchTemplateMultiple(byte[] rawImageData, int width, int height, int bpp,
 			String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage, int maxResults) {
 		return searchTemplateMultipleOptimizedRaw(rawImageData, width, height, bpp, templateResourcePath, topLeftCorner, bottomRightCorner, thresholdPercentage, maxResults);
+	}
+	
+	
+	private static Mat loadTemplate(String templateResourcePath,boolean greyscale) {
+		if (greyscale) {
+			return loadTemplateGrayscale(templateResourcePath);
+		}
+		else {
+			return loadTemplateOptimized(templateResourcePath);
+		}				
 	}
 
 	/**
@@ -356,6 +398,15 @@ public class ImageSearchUtil {
 	 */
     public static DTOImageSearchResult searchTemplateOptimized(byte[] rawImageData, int width, int height, int bpp,
                                                                String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage) {
+		return searchTemplate(rawImageData,width,height,bpp,templateResourcePath,topLeftCorner,bottomRightCorner,thresholdPercentage,null);
+	}
+
+	/**
+	 * Performs the search for a template within a main image.
+	 */
+	public static DTOImageSearchResult searchTemplate(byte[] rawImageData, int width, int height, int bpp,
+													  String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner, double thresholdPercentage, 
+													  Options options) {
 
         long startTime = System.currentTimeMillis();
         logger.debug("=== Template Search Started ===");
@@ -368,6 +419,8 @@ public class ImageSearchUtil {
         Mat mask = null;
         Mat imagenROI = null;
         Mat resultado = null;
+		
+		if (options == null) options = new Options();
 
 		String[] templatePaths = templateResourcePath.split("/");
 		String templateName = templatePaths[templatePaths.length - 1];
@@ -383,6 +436,17 @@ public class ImageSearchUtil {
                 logger.error("Converted image is empty");
                 return new DTOImageSearchResult(false, null, 0.0);
             }
+            
+			if (options.greyscale) {
+	            // Convert main image to grayscale
+				Mat oldImage = imagenPrincipal;
+				try {
+					imagenPrincipal = new Mat();
+					Imgproc.cvtColor(oldImage, imagenPrincipal, Imgproc.COLOR_BGR2GRAY);
+				} finally {
+					oldImage.release();
+				}
+			}
 
             // Quick ROI validation
             int roiX = topLeftCorner.getX();
@@ -494,7 +558,7 @@ public class ImageSearchUtil {
             return new DTOImageSearchResult(true, new DTOPoint((int) centerX, (int) centerY), matchPercentage);
 
         } catch (Exception e) {
-            logger.error(formatLogMessage("Exception during optimized template search"), e);
+            logger.error(formatLogMessage("Exception during optimized template search with options " + options.toString()), e);
             return new DTOImageSearchResult(false, null, 0.0);
         } finally {
             // Explicit release of OpenCV memory
@@ -505,7 +569,8 @@ public class ImageSearchUtil {
             if (resultado != null) resultado.release();
         }
     }
-
+	
+	
     private static Mat convertRawDataToMat(byte[] rawData, int width, int height, int bpp) {
         // Create Mat with appropriate type based on bpp
         // RawImage from ddmlib typically uses 16 or 32 bpp
@@ -561,6 +626,15 @@ public class ImageSearchUtil {
 	public static List<DTOImageSearchResult> searchTemplateMultipleOptimized(byte[] image,
 			String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner,
 			double thresholdPercentage, int maxResults) {
+		return searchTemplateMultiple(image,templateResourcePath,topLeftCorner,bottomRightCorner,thresholdPercentage,maxResults,null);
+	}
+	
+	/**
+	 * multiple search.
+	 */
+	public static List<DTOImageSearchResult> searchTemplateMultiple(byte[] image,
+			String templateResourcePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner,
+			double thresholdPercentage, int maxResults, Options options) {
 
 		List<DTOImageSearchResult> results = new ArrayList<>();
 		Mat mainImage = null;
@@ -568,6 +642,8 @@ public class ImageSearchUtil {
 		Mat imageROI = null;
 		Mat matchResult = null;
 		Mat resultCopy = null;
+		
+		if (options == null) options = new Options();
 
 		try {
 			// Quick ROI validation
@@ -587,9 +663,20 @@ public class ImageSearchUtil {
 			if (mainImage.empty()) {
 				return results;
 			}
-
+			
+			if (options.greyscale) {
+	            // Convert main image to grayscale
+				Mat oldImage = mainImage;
+				try {
+					mainImage = new Mat();
+					Imgproc.cvtColor(oldImage, mainImage, Imgproc.COLOR_BGR2GRAY);
+				} finally {
+					oldImage.release();
+				}
+			}
+			
 			// Load template with cache
-			template = loadTemplateOptimized(templateResourcePath);
+			template = loadTemplate(templateResourcePath,options.greyscale);
 			if (template.empty()) {
 				return results;
 			}
@@ -786,6 +873,7 @@ public class ImageSearchUtil {
 			if (mainImage.empty()) {
 				return results;
 			}
+
 
 			// Load template with cache
 			template = loadTemplateOptimized(templateResourcePath);
