@@ -44,7 +44,7 @@ public class InitializeTask extends DelayedTask {
 			emuManager.launchApp(EMULATOR_NUMBER, EmulatorManager. GAME.getPackageName());
 			sleepTask(10000);
 
-			final int MAX_ATTEMPTS = 10;
+			final int MAX_ATTEMPTS = 20;
 			final int WAIT_TIME = 5000;
 
 			boolean homeScreen = false;

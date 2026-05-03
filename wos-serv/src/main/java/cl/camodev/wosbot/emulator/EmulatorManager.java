@@ -45,6 +45,13 @@ public class EmulatorManager {
     private Emulator emulator;
     private int MAX_RUNNING_EMULATORS = 3;
     private final Set<Thread> activeSlots = new HashSet<>();
+    
+    final private static int DEFAULT_SCREEN_SIZE_X = 720;
+    final private static int DEFAULT_SCREEN_SIZE_Y = 1280;
+    
+    private int screenX = 540; //720;
+    private int screenY = 960; //1280;
+    
 
     private EmulatorManager() {
 
@@ -133,12 +140,14 @@ public class EmulatorManager {
     public void tapAtPoint(String emulatorNumber, DTOPoint point) {
         checkEmulatorInitialized();
         
+        DTOPoint scaledPoint = new DTOPoint(point,getScale());
+                       
         // Get profile name and log the tap
         String profileName = getProfileNameForEmulator(emulatorNumber);
         logger.info("{} - Tapping at ({},{}) for emulator {}", 
                 profileName, point.getX(), point.getY(), emulatorNumber);
                 
-        emulator.tapAtRandomPoint(emulatorNumber, point, point);
+        emulator.tapAtRandomPoint(emulatorNumber, scaledPoint, scaledPoint);
     }
 
     /**
@@ -147,12 +156,16 @@ public class EmulatorManager {
     public boolean tapAtRandomPoint(String emulatorNumber, DTOPoint point1, DTOPoint point2) {
         checkEmulatorInitialized();
         
+        float scale = getScale();
+        DTOPoint scaledPoint1 = new DTOPoint(point1,scale);
+        DTOPoint scaledPoint2 = new DTOPoint(point2,scale);
+        
         // Get profile name and log the tap
         String profileName = getProfileNameForEmulator(emulatorNumber);
         logger.info("{} - Random tapping in area ({},{}) to ({},{}) for emulator {}", 
-                profileName, point1.getX(), point1.getY(), point2.getX(), point2.getY(), emulatorNumber);
+                profileName, scaledPoint1.getX(), scaledPoint1.getY(), scaledPoint2.getX(), scaledPoint2.getY(), emulatorNumber);
                 
-        return emulator.tapAtRandomPoint(emulatorNumber, point1, point2);
+        return emulator.tapAtRandomPoint(emulatorNumber, scaledPoint1, scaledPoint2);
     }
 
     /**
@@ -161,12 +174,16 @@ public class EmulatorManager {
     public boolean tapAtRandomPoint(String emulatorNumber, DTOPoint point1, DTOPoint point2, int tapCount, int delayMs) {
         checkEmulatorInitialized();
         
+        float scale = getScale();
+        DTOPoint scaledPoint1 = new DTOPoint(point1,scale);
+        DTOPoint scaledPoint2 = new DTOPoint(point2,scale);
+        
         // Get profile name and log the tap
         String profileName = getProfileNameForEmulator(emulatorNumber);
         logger.info("{} - Multiple random tapping ({} times) in area ({},{}) to ({},{}) for emulator {}", 
                 profileName, tapCount, point1.getX(), point1.getY(), point2.getX(), point2.getY(), emulatorNumber);
                 
-        return emulator.tapAtRandomPoint(emulatorNumber, point1, point2, tapCount, delayMs);
+        return emulator.tapAtRandomPoint(emulatorNumber, scaledPoint1, scaledPoint2, tapCount, delayMs);
     }
 
     /**
@@ -175,12 +192,20 @@ public class EmulatorManager {
     public void executeSwipe(String emulatorNumber, DTOPoint start, DTOPoint end) {
         checkEmulatorInitialized();
         
+        float scale = getScale();
+        DTOPoint scaledStart = new DTOPoint(start,scale);
+        DTOPoint scaledEnd = new DTOPoint(end,scale);
+        
         // Get profile name and log the swipe
         String profileName = getProfileNameForEmulator(emulatorNumber);
         logger.info("{} - Swiping from ({},{}) to ({},{}) for emulator {}", 
                 profileName, start.getX(), start.getY(), end.getX(), end.getY(), emulatorNumber);
                 
-        emulator.swipe(emulatorNumber, start, end);
+        emulator.swipe(emulatorNumber, scaledStart, scaledEnd);
+    }
+    
+    private float getScale() {
+    	return (float)1.0 * screenX / DEFAULT_SCREEN_SIZE_X;
     }
 
     /**
@@ -210,7 +235,8 @@ public class EmulatorManager {
      */
     public String ocrRegionText(String emulatorNumber, DTOPoint p1, DTOPoint p2) throws IOException, TesseractException {
         checkEmulatorInitialized();
-        return emulator.ocrRegionText(emulatorNumber, p1, p2);
+        float scale = getScale();
+        return emulator.ocrRegionText(emulatorNumber, new DTOPoint(p1,scale) , new DTOPoint(p2,scale));
     }
 
     /**
@@ -224,8 +250,9 @@ public class EmulatorManager {
      * @throws TesseractException if OCR fails
      */
     public String ocrRegionText(String emulatorNumber, DTOPoint p1, DTOPoint p2, DTOTesseractSettings settings) throws IOException, TesseractException {
-        checkEmulatorInitialized();
-        return emulator.ocrRegionText(emulatorNumber, p1, p2, settings);
+        checkEmulatorInitialized(); 
+        float scale = getScale();
+        return emulator.ocrRegionText(emulatorNumber, new DTOPoint(p1,scale) , new DTOPoint(p2,scale), settings);
     }
 
     /**
@@ -331,7 +358,7 @@ public class EmulatorManager {
             ImageSearchUtil.setProfileName(profileName);
             
             return ImageSearchUtil.searchTemplate(screenshot, bestTemplatePath, topLeftCorner, bottomRightCorner, threshold,
-            		new ImageSearchUtil.Options().setGreyscale(greyscale));
+            		new ImageSearchUtil.Options().setGreyscale(greyscale).setScale(getScale()));
         } finally {
             // Clear profile name after the search is done
             ImageSearchUtil.clearProfileName();
@@ -342,7 +369,7 @@ public class EmulatorManager {
      * Searches for an image on the entire emulator screen.
      */
     public DTOImageSearchResult searchTemplate(String emulatorNumber, EnumTemplates templatePath, double threshold) {
-    	return searchTemplate(emulatorNumber, templatePath, new DTOPoint(0,0), new DTOPoint(720,1280), threshold);
+    	return searchTemplate(emulatorNumber, templatePath, new DTOPoint(0,0), new DTOPoint(DEFAULT_SCREEN_SIZE_X,DEFAULT_SCREEN_SIZE_Y), threshold);
     }
 
     /**
@@ -356,7 +383,7 @@ public class EmulatorManager {
      * Searches for an image on the entire emulator screen using grayscale matching.
      */
     public DTOImageSearchResult searchTemplateGrayscale(String emulatorNumber, EnumTemplates templatePath, double threshold) {    	
-    	return searchTemplateGrayscale(emulatorNumber, templatePath, new DTOPoint(0,0), new DTOPoint(720,1280), threshold);
+    	return searchTemplateGrayscale(emulatorNumber, templatePath, new DTOPoint(0,0), new DTOPoint(DEFAULT_SCREEN_SIZE_X,DEFAULT_SCREEN_SIZE_Y), threshold);
     }
 
     /**
@@ -370,7 +397,7 @@ public class EmulatorManager {
      * Searches for multiple instances of an image on the entire emulator screen using grayscale matching.
      */
     public List<DTOImageSearchResult> searchTemplatesGrayscale(String emulatorNumber, EnumTemplates templatePath, double threshold, int maxResults) {
-    	return searchTemplatesGrayscale(emulatorNumber,templatePath, new DTOPoint(0,0), new DTOPoint(720,1280), threshold, maxResults);
+    	return searchTemplatesGrayscale(emulatorNumber,templatePath, new DTOPoint(0,0), new DTOPoint(DEFAULT_SCREEN_SIZE_X,DEFAULT_SCREEN_SIZE_Y), threshold, maxResults);
     }
 
     public List<DTOImageSearchResult> searchTemplates(String emulatorNumber, EnumTemplates templatePath, DTOPoint topLeftCorner, DTOPoint bottomRightCorner , double threshold, int maxResults) {
@@ -388,7 +415,7 @@ public class EmulatorManager {
             ImageSearchUtil.setProfileName(profileName);
             
             return ImageSearchUtil.searchTemplateMultiple(screenshot, bestTemplatePath, topLeftCorner, bottomRightCorner, threshold, maxResults,
-            		new ImageSearchUtil.Options().setGreyscale(greyscale));
+            		new ImageSearchUtil.Options().setGreyscale(greyscale).setScale(getScale()));
         } finally {
             // Clear profile name after the search is done
             ImageSearchUtil.clearProfileName();
@@ -396,7 +423,7 @@ public class EmulatorManager {
     }
 
     public List<DTOImageSearchResult> searchTemplates(String emulatorNumber, EnumTemplates templatePath, double threshold, int maxResults) {
-    	return searchTemplates(emulatorNumber,templatePath, new DTOPoint(0,0), new DTOPoint(720,1280), threshold, maxResults);
+    	return searchTemplates(emulatorNumber,templatePath, new DTOPoint(0,0), new DTOPoint(DEFAULT_SCREEN_SIZE_X,DEFAULT_SCREEN_SIZE_Y), threshold, maxResults);
     }
 
     /**

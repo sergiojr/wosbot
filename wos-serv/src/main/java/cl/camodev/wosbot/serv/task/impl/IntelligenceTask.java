@@ -243,16 +243,16 @@ public class IntelligenceTask extends DelayedTask {
 		emuManager.tapAtPoint(EMULATOR_NUMBER, result.getPoint());
 		sleepTask(2000);
 
-		DTOImageSearchResult view = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_VIEW, 90);
+		DTOImageSearchResult view = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_VIEW, 80);
 		if (view.isFound()) {
 			emuManager.tapAtPoint(EMULATOR_NUMBER, view.getPoint());
-			sleepTask(500);
+			sleepTask(1000);
 			DTOImageSearchResult explore = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_EXPLORE, 90);
 			if (explore.isFound()) {
 				emuManager.tapAtPoint(EMULATOR_NUMBER, explore.getPoint());
-				sleepTask(500);
-				emuManager.tapAtPoint(EMULATOR_NUMBER, new DTOPoint(520, 1200));
 				sleepTask(1000);
+				emuManager.tapAtPoint(EMULATOR_NUMBER, new DTOPoint(520, 1200));
+				sleepTask(2000);
 				tapBackButton();
                 StaminaService.getServices().subtractStamina(profile.getId(),10);
 			} else {
@@ -267,10 +267,10 @@ public class IntelligenceTask extends DelayedTask {
 		emuManager.tapAtPoint(EMULATOR_NUMBER, result.getPoint());
 		sleepTask(2000);
 
-		DTOImageSearchResult view = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_VIEW, 90);
+		DTOImageSearchResult view = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_VIEW, 80);
 		if (view.isFound()) {
 			emuManager.tapAtPoint(EMULATOR_NUMBER, view.getPoint());
-			sleepTask(500);
+			sleepTask(1000);
 			DTOImageSearchResult rescue = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_RESCUE, 90);
 			if (rescue.isFound()) {
 				emuManager.tapAtPoint(EMULATOR_NUMBER, rescue.getPoint());
@@ -291,14 +291,14 @@ public class IntelligenceTask extends DelayedTask {
 		emuManager.tapAtPoint(EMULATOR_NUMBER, beast.getPoint());
 		sleepTask(2000);
 
-		DTOImageSearchResult view = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_VIEW, 90);
+		DTOImageSearchResult view = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_VIEW, 80);
 		if (!view.isFound()) {
 			logWarning("Could not find the 'View' button for the beast. Going back.");
 			tapBackButton();
 			return;
 		}
 		emuManager.tapAtPoint(EMULATOR_NUMBER, view.getPoint());
-		sleepTask(500);
+		sleepTask(1000);
 
 		DTOImageSearchResult attack = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.INTEL_ATTACK, 90);
 		if (!attack.isFound()) {
@@ -307,7 +307,7 @@ public class IntelligenceTask extends DelayedTask {
 			return;
 		}
 		emuManager.tapAtPoint(EMULATOR_NUMBER, attack.getPoint());
-		sleepTask(500);
+		sleepTask(11000);
 
 		// Check if the march screen is open before proceeding
 		DTOImageSearchResult deployButton = emuManager.searchTemplate(EMULATOR_NUMBER, EnumTemplates.DEPLOY_BUTTON, 90);

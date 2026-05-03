@@ -24,7 +24,7 @@ public class MailRewardsTask extends DelayedTask {
 		logInfo("Navigating to the mail screen.");
 		emuManager.tapAtRandomPoint(EMULATOR_NUMBER, new DTOPoint(640, 1033),
 				new DTOPoint(686, 1064));
-		sleepTask(1000);
+		sleepTask(4000);
 		for (DTOPoint button : buttons) {
 			// Change tabs
 			emuManager.tapAtRandomPoint(EMULATOR_NUMBER, button, button);

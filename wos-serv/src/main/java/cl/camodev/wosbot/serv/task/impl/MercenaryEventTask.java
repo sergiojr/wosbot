@@ -256,7 +256,7 @@ public class MercenaryEventTask extends DelayedTask {
         logInfo("Mercenary event not immediately visible. Swiping left to locate it.");
         for (int i = 0; i < 3; i++) {
             swipe(new DTOPoint(80, 120), new DTOPoint(578, 130));
-            sleepTask(200);
+            sleepTask(500);
         }
 
         int attempts = 0;
@@ -272,7 +272,7 @@ public class MercenaryEventTask extends DelayedTask {
 
             logInfo("Mercenary event not found. Swiping right and retrying...");
             swipe(new DTOPoint(630, 143), new DTOPoint(500, 128));
-            sleepTask(200);
+            sleepTask(500);
             attempts++;
         }
 

@@ -130,15 +130,23 @@ public class ImageSearchUtil {
 	public static class Options {
 		public boolean greyscale;
 
+		public double scale = 1.0;
+
 		public Options setGreyscale(boolean greyscale) {
 			this.greyscale = greyscale;
 			return this;
 		}
 
+		public Options setScale(double scale) {
+			this.scale = scale;
+			return this;
+		}
+
 		@Override
 		public String toString() {
-			return String.format("Greyscale = %s", greyscale);
+			return String.format("Greyscale = %s, Scale = %f", greyscale, scale);
 		}
+
 	}
 
 	/**
@@ -306,6 +314,16 @@ public class ImageSearchUtil {
 				return new DTOImageSearchResult(false, null, 0.0);
 			}
 			
+			if (options.scale != 1.0) {
+				Mat oldImage = imagenPrincipal;
+				try {
+					imagenPrincipal = new Mat();
+					Imgproc.resize(oldImage, imagenPrincipal, new org.opencv.core.Size(), 1.0 / options.scale, 1.0 / options.scale, Imgproc.INTER_CUBIC );
+				} finally {
+					oldImage.release();
+				}
+			}	
+			
 			if (options.greyscale) {
 	            // Convert main image to grayscale
 				Mat oldImage = imagenPrincipal;
@@ -322,6 +340,16 @@ public class ImageSearchUtil {
 			if (template.empty()) {
 				return new DTOImageSearchResult(false, null, 0.0);
 			}
+			
+//			if (options.scale != 1.0) {
+//				Mat oldTemplate = template;
+//				try {
+//					template = new Mat();
+//					Imgproc.resize(oldTemplate, template, new org.opencv.core.Size(), options.scale, options.scale);
+//				} finally {
+//					oldTemplate.release();
+//				}
+//			}
 
 			// ROI vs image validation
 			if (roiX + roiWidth > imagenPrincipal.cols() || roiY + roiHeight > imagenPrincipal.rows()) {
@@ -430,6 +458,16 @@ public class ImageSearchUtil {
 				return results;
 			}
 			
+			if (options.scale != 1.0) {
+				Mat oldImage = mainImage;
+				try {
+					mainImage = new Mat();
+					Imgproc.resize(oldImage, mainImage, new org.opencv.core.Size(), 1.0 / options.scale, 1.0 / options.scale, Imgproc.INTER_CUBIC );
+				} finally {
+					oldImage.release();
+				}
+			}				
+			
 			if (options.greyscale) {
 	            // Convert main image to grayscale
 				Mat oldImage = mainImage;
@@ -446,6 +484,16 @@ public class ImageSearchUtil {
 			if (template.empty()) {
 				return results;
 			}
+			
+//			if (options.scale != 1.0) {
+//				Mat oldTemplate = template;
+//				try {
+//					template = new Mat();
+//					Imgproc.resize(oldTemplate, template, new org.opencv.core.Size(), options.scale, options.scale);
+//				} finally {
+//					oldTemplate.release();
+//				}
+//			}
 
 			// Validations
 			if (roiX + roiWidth > mainImage.cols() || roiY + roiHeight > mainImage.rows()) {

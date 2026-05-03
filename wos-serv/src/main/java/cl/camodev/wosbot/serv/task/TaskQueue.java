@@ -523,7 +523,7 @@ public class TaskQueue {
             boolean notPaused = (paused == LocalDateTime.MIN);
 
             if (!emulatorRunning || !notPaused) {
-                logInfo(String.format("Skipping background checks - Emulator running: %s, Not paused: %s",
+                logDebug(String.format("Skipping background checks - Emulator running: %s, Not paused: %s",
                         emulatorRunning, notPaused));
                 return;
             }
@@ -629,6 +629,12 @@ public class TaskQueue {
         String prefixedMessage = profile.getName() + " - " + message;
         logger.error(prefixedMessage);
         ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, task.getTaskName(), profile.getName(), message);
+    }
+    
+    private void logDebug(String message) {
+        String prefixedMessage = profile.getName() + " - " + message;
+        logger.debug(prefixedMessage);
+        ServLogs.getServices().appendLog(EnumTpMessageSeverity.DEBUG, "TaskQueue", profile.getName(), message);
     }
 
     private void updateProfileStatus(String status) {

@@ -179,7 +179,7 @@ public abstract class DelayedTask implements Runnable, Delayed {
             } else {
                 logWarning("Home/World screen not found. Tapping back button (Attempt " + attempt + "/10)");
                 EmulatorManager.getInstance().tapBackButton(EMULATOR_NUMBER);
-                sleepTask(100);
+                sleepTask(2000);
             }
         }
 
@@ -286,9 +286,9 @@ public abstract class DelayedTask implements Runnable, Delayed {
     protected void updateStaminaFromProfile() {
         // i need to update stamina on profile (maybe most reliable than intel screen)
         // go to profile
-        tapRandomPoint(new DTOPoint(24, 24), new DTOPoint(61, 61), 1, 500);
+        tapRandomPoint(new DTOPoint(24, 24), new DTOPoint(61, 61), 1, 2000);
         // go to stamina
-        tapRandomPoint(new DTOPoint(223, 1101), new DTOPoint(244, 1123), 1, 500);
+        tapRandomPoint(new DTOPoint(223, 1101), new DTOPoint(244, 1123), 1, 2000);
 
         try {
             // read stamina
@@ -613,9 +613,9 @@ public abstract class DelayedTask implements Runnable, Delayed {
     protected boolean checkMarchesAvailable() {
         // Open active marches panel
         emuManager.tapAtPoint(EMULATOR_NUMBER, new DTOPoint(2, 550));
-        sleepTask(500);
+        sleepTask(1000);
         emuManager.tapAtPoint(EMULATOR_NUMBER, new DTOPoint(340, 265));
-        sleepTask(500);
+        sleepTask(1000);
 
         // Define march slot coordinates
         DTOPoint[] marchTopLeft = {

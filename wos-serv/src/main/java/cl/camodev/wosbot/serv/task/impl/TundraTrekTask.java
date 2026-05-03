@@ -83,7 +83,7 @@ public class TundraTrekTask extends DelayedTask {
                 emuManager.tapAtPoint(EMULATOR_NUMBER, trekSupplies.getPoint());
                 sleepTask(500);
                 // This tap seems necessary to open the final claim screen
-                emuManager.tapAtRandomPoint(EMULATOR_NUMBER, new DTOPoint(344, 29), new DTOPoint(413, 49));
+                emuManager.tapAtRandomPoint(EMULATOR_NUMBER, new DTOPoint(544, 29), new DTOPoint(613, 49));
                 sleepTask(3000);
                 return true;
             } else {

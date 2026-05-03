@@ -8,6 +8,11 @@ public class DTOPoint {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public DTOPoint(DTOPoint point, float scale) {
+		this.x = (int) (scale * point.x);
+		this.y = (int) (scale * point.y);
+	}
 
 	public int getX() {
 		return x;
