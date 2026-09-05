@@ -503,10 +503,12 @@ public abstract class Emulator {
 	 * @param point Start point
 	 * @param point2 End point
 	 */
-	public void swipe(String emulatorNumber, DTOPoint point, DTOPoint point2) {
+	public void swipe(String emulatorNumber, DTOPoint point, DTOPoint point2, int duration) {
+		int locDuration = (duration==0)?300:duration;
+		
 		withRetries(emulatorNumber, device -> {
 			try {
-				String command = String.format("input swipe %d %d %d %d", point.getX(), point.getY(), point2.getX(), point2.getY());
+				String command = String.format("input swipe %d %d %d %d %d", point.getX(), point.getY(), point2.getX(), point2.getY(), locDuration);
 				device.executeShellCommand(command, new NullOutputReceiver());
 				logger.debug("Swipe executed from ({},{}) to ({},{}) on emulator {}",
 						point.getX(), point.getY(), point2.getX(), point2.getY(), emulatorNumber);

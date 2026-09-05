@@ -175,14 +175,18 @@ public class EmulatorManager {
      * Swipes between two points.
      */
     public void executeSwipe(String emulatorNumber, DTOPoint start, DTOPoint end) {
+    	executeSwipe(emulatorNumber, start, end, 300);
+    }
+    
+    public void executeSwipe(String emulatorNumber, DTOPoint start, DTOPoint end, int duration) {
         checkEmulatorInitialized();
 
         // Get profile name and log the swipe
         String profileName = getProfileNameForEmulator(emulatorNumber);
-        logger.info("{} - Swiping from ({},{}) to ({},{}) for emulator {}",
-                profileName, start.getX(), start.getY(), end.getX(), end.getY(), emulatorNumber);
+        logger.info("{} - Swiping from ({},{}) to ({},{}) over {}ms for emulator {}",
+                profileName, start.getX(), start.getY(), end.getX(), end.getY(), duration, emulatorNumber);
 
-        emulator.swipe(emulatorNumber, start, end);
+        emulator.swipe(emulatorNumber, start, end, duration);
     }
 
     /**
