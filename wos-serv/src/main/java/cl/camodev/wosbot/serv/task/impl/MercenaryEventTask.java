@@ -143,13 +143,15 @@ public class MercenaryEventTask extends DelayedTask {
 
     private boolean selectMercenaryEventLevel() {
         // Try each initiation type in order: Legends -> Epic -> Champions
-        String[] initiationTypes = { "Legends", "Epic", "Champions" };
+        String[] initiationTypes = { "Fearless", "Legends", "Epic", "Champions" };
         EnumTemplates[] unselectedTemplates = {
+        		EnumTemplates.MERCENARY_FEARLESS_INITIATION_UNSELECTED,
                 EnumTemplates.MERCENARY_LEGENDS_INITIATION_UNSELECTED,
                 EnumTemplates.MERCENARY_EPIC_INITIATION_UNSELECTED,
                 EnumTemplates.MERCENARY_CHAMPIONS_INITIATION_UNSELECTED
         };
         EnumTemplates[] selectedTemplates = {
+        		EnumTemplates.MERCENARY_FEARESS_INITIATION_SELECTED,
                 EnumTemplates.MERCENARY_LEGENDS_INITIATION_SELECTED,
                 EnumTemplates.MERCENARY_EPIC_INITIATION_SELECTED,
                 EnumTemplates.MERCENARY_CHAMPIONS_INITIATION_SELECTED
