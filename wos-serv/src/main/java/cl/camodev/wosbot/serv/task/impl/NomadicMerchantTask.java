@@ -44,9 +44,16 @@ public class NomadicMerchantTask extends DelayedTask {
         logInfo("Navigating to the shop.");
         tapRandomPoint(shopButtonResult.getPoint(), shopButtonResult.getPoint());
         sleepTask(2000);
+        
+        if(!isNomadicMerchant()) {
+          logInfo("Looking for Nomadic Merchant tab in the shop");
+          if(!navigateNomadicMerchant()) {
+        	  return;
+          }
+        }
 
         // STEP 2: Main loop to handle all nomadic merchant operations
-        boolean continueOperations = true;
+        boolean continueOperations = isNomadicMerchant();
 
         while (continueOperations) {
             // PHASE 1: Search for resource templates until none are found
@@ -139,5 +146,34 @@ public class NomadicMerchantTask extends DelayedTask {
     @Override
     protected EnumStartLocation getRequiredStartLocation() {
         return EnumStartLocation.HOME;
+    }
+    
+    private boolean isNomadicMerchant() {
+		DTOImageSearchResult nomadicMerchantResult = templateSearchHelper.searchTemplate(
+				EnumTemplates.SHOP_NOMADIC_MERCHANT_HEADER,
+				SearchConfigConstants.DEFAULT_SINGLE);
+
+		return nomadicMerchantResult.isFound();   	
+    }
+    
+    private boolean navigateNomadicMerchant() {
+		// STEP 2: Search for nomadic merchant within the shop menu
+		DTOImageSearchResult nomadicMerchantResult = templateSearchHelper.searchTemplate(
+				EnumTemplates.SHOP_NOMADIC_MERCHANT_BUTTON,
+				SearchConfigConstants.DEFAULT_SINGLE);
+
+		if (!nomadicMerchantResult.isFound()) {
+			logWarning("Nomadic Merchant button not found inside the shop. Rescheduling for 1 hour.");
+			tapBackButton();
+			LocalDateTime nextAttempt = LocalDateTime.now().plusHours(1);
+			this.reschedule(nextAttempt);
+			return false;
+		}
+
+		// Tap on mystery shop
+		tapRandomPoint(nomadicMerchantResult.getPoint(), nomadicMerchantResult.getPoint());
+		sleepTask(1000);
+		logInfo("Successfully navigated to the Nomadic Merchant.");
+		return true;
     }
 }

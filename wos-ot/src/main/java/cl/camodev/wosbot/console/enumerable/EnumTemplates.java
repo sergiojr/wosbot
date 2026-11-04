@@ -312,6 +312,8 @@ public enum EnumTemplates {
 	NOMADIC_MERCHANT_VIP("/templates/nomadicmerchant/vip.png"),
 	NOMADIC_MERCHANT_REFRESH("/templates/nomadicmerchant/refresh.png"),
 	
+	SHOP_NOMADIC_MERCHANT_HEADER("/templates/shop/nomadicMerchantHeader.png"),
+	SHOP_NOMADIC_MERCHANT_BUTTON("/templates/shop/nomadicMerchantButton.png"),
 	SHOP_MYSTERY_BUTTON("/templates/shop/mysteryShopButton.png"),
 	MYSTERY_SHOP_FREE_REWARD("/templates/shop/mysteryshop/freeReward.png"),
 	MYSTERY_SHOP_DAILY_REFRESH("/templates/shop/mysteryshop/dailyRefresh.png"),
