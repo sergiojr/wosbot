@@ -253,7 +253,7 @@ public class NavigationHelper {
             emuManager.executeSwipe(
                     emulatorNumber,
                     EVENT_SWIPE_RIGHT_START,
-                    EVENT_SWIPE_RIGHT_END);
+                    EVENT_SWIPE_RIGHT_END, 1000);
             sleep(300);
         }
 
