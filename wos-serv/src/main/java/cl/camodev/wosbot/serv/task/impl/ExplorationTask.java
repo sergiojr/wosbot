@@ -26,7 +26,7 @@ public class ExplorationTask extends DelayedTask {
 				EnumTemplates.EXPLORATION_CLAIM, SearchConfigConstants.DEFAULT_SINGLE);
 		if (claimResult.isFound()) {
 			logInfo("Claiming exploration rewards...");
-			tapRandomPoint(new DTOPoint(560, 900), new DTOPoint(670, 940));
+			tapRandomPoint(new DTOPoint(560, 850), new DTOPoint(670, 890));
 			sleepTask(500);
 			tapRandomPoint(new DTOPoint(230, 890), new DTOPoint(490, 960));
 			sleepTask(500);
