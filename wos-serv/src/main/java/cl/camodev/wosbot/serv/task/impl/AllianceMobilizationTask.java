@@ -1548,7 +1548,12 @@ public class AllianceMobilizationTask extends DelayedTask {
                 EnumTemplates.AM_TRAIN_TROOPS,
                 EnumTemplates.AM_TRAINING_SPEEDUPS,
                 EnumTemplates.AM_USE_GEMS,
-                EnumTemplates.AM_USE_SPEEDUPS
+                EnumTemplates.AM_USE_SPEEDUPS,
+                EnumTemplates.AM_LEARN_SPEEDUPS,
+                EnumTemplates.AM_EXPERT_BOOKS,
+                EnumTemplates.AM_EXPERT_SIGILS,
+                EnumTemplates.AM_PETS_ADVANCEMENT,
+                EnumTemplates.AM_PETS_REFINEMENT
         };
 
         for (EnumTemplates template : taskTypeTemplates) {

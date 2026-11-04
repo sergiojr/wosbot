@@ -232,7 +232,11 @@ public enum EnumTemplates {
     AM_TRAINING_SPEEDUPS("/templates/events/mobilization/AM_Training_Speedups.png"),
     AM_USE_GEMS("/templates/events/mobilization/AM_Use_Gems.png"),
     AM_USE_SPEEDUPS("/templates/events/mobilization/AM_Use_Speedups.png"),
-
+    AM_LEARN_SPEEDUPS("/templates/events/mobilization/AM_Learn_Speedups.png"),
+    AM_EXPERT_BOOKS("/templates/events/mobilization/AM_Expert_Books.png"),
+    AM_EXPERT_SIGILS("/templates/events/mobilization/AM_Expert_Sigils.png"),  
+    AM_PETS_ADVANCEMENT("/templates/events/mobilization/AM_Pets_Advancement.png"),
+    AM_PETS_REFINEMENT("/templates/events/mobilization/AM_Pets_Refinement.png"),
 
     // ========================================================================
     // CRYSTAL LAB AND UPGRADES

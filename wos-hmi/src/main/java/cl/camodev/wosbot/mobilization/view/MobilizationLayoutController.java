@@ -43,7 +43,17 @@ public class MobilizationLayoutController extends AbstractProfileController {
     private CheckBox useGemsCheck;
     @FXML
     private CheckBox useSpeedupsCheck;
-
+    
+    @FXML
+    private CheckBox useExpertSigilsCheck;
+    @FXML
+    private CheckBox useExpertBooksCheck;
+    
+    @FXML
+    private CheckBox usePetsAdvancementCheck;
+    @FXML
+    private CheckBox usePetsRefinementCheck;
+    
     @FXML
     private TextField minimumPoints200Field;
     @FXML
@@ -51,7 +61,7 @@ public class MobilizationLayoutController extends AbstractProfileController {
     @FXML
     private CheckBox autoAcceptCheck;
     @FXML
-    private CheckBox useGemsBottomCheck;
+    private CheckBox useGemsBottomCheck;       
 
     @FXML
     private void initialize() {
@@ -73,6 +83,10 @@ public class MobilizationLayoutController extends AbstractProfileController {
         checkBoxMappings.put(trainingSpeedupsCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_TRAINING_SPEEDUPS_BOOL);
         checkBoxMappings.put(useGemsCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_USE_GEMS_BOOL);
         checkBoxMappings.put(useSpeedupsCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_USE_SPEEDUPS_BOOL);
+        checkBoxMappings.put(useExpertSigilsCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_USE_EXPERT_SIGILS_BOOL);
+        checkBoxMappings.put(useExpertBooksCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_USE_EXPERT_BOOKS_BOOL);
+        checkBoxMappings.put(usePetsAdvancementCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_USE_PETS_ADVANCEMENT_BOOL);
+        checkBoxMappings.put(usePetsRefinementCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_USE_PETS_REFINEMENT_BOOL);        
         checkBoxMappings.put(autoAcceptCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_AUTO_ACCEPT_BOOL);
         checkBoxMappings.put(useGemsBottomCheck, EnumConfigurationKey.ALLIANCE_MOBILIZATION_USE_GEMS_FOR_ACCEPT_BOOL);
 
