@@ -416,7 +416,9 @@ public enum EnumTemplates {
 	MERCENARY_CHAMPIONS_INITIATION_UNSELECTED("/templates/mercenary/mercenaryEventChampionsInitiationUnselected.png"),
 	MERCENARY_LEGENDS_INITIATION_SELECTED("/templates/mercenary/mercenaryEventLegendsInitiationSelected.png"),
 	MERCENARY_LEGENDS_INITIATION_UNSELECTED("/templates/mercenary/mercenaryEventLegendsInitiationUnselected.png"),
-
+	MERCENARY_FEARESS_INITIATION_SELECTED("/templates/mercenary/mercenaryEventFearlessInitiationSelected.png"),
+	MERCENARY_FEARLESS_INITIATION_UNSELECTED("/templates/mercenary/mercenaryEventFearlessInitiationUnselected.png"),
+	
 	// ========================================================================
     // HERO'S MISSION EVENT
     // ========================================================================
