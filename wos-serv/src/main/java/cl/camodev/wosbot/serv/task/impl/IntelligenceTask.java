@@ -525,11 +525,13 @@ public class IntelligenceTask extends DelayedTask {
 		}
 
 		// Equalize troops
-		DTOImageSearchResult equalizeButton = templateSearchHelper.searchTemplate(EnumTemplates.RALLY_EQUALIZE_BUTTON,
-				SearchConfigConstants.SINGLE_WITH_RETRIES);
-		if (equalizeButton.isFound()) {
-			tapPoint(equalizeButton.getPoint());
-			sleepTask(300);
+		if (!useFlag) {
+			DTOImageSearchResult equalizeButton = templateSearchHelper
+					.searchTemplate(EnumTemplates.RALLY_EQUALIZE_BUTTON, SearchConfigConstants.SINGLE_WITH_RETRIES);
+			if (equalizeButton.isFound()) {
+				tapPoint(equalizeButton.getPoint());
+				sleepTask(300);
+			}
 		}
 
 		// Parse travel time
